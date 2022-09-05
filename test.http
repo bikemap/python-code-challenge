@@ -1,0 +1,49 @@
+## GET todo entry
+GET http://{{host}}:{{port}}/todo/1/
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+###
+
+## POST Create new invoice
+POST http://{{host}}:{{port}}/todo/
+Content-Type: application/json
+
+{
+  "summary": "Lorem Ipsum",
+  "detail": null,
+  "created_at": "2022-09-05T18:07:19.280040+00:00"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+        client.assert(response.body.hasOwnProperty("id"), "Cannot find 'id' option in response");
+    });
+%}
+###
+
+## POST Validation test
+POST http://{{host}}:{{port}}/todo/
+Content-Type: application/json
+
+{
+  "summary": "Lo",
+  "detail": null,
+  "created_at": "2022-09-05T18:07:19.280040+00:00"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 422, "Response status is not 422");
+        client.assert(response.body.hasOwnProperty("type"), "Cannot find 'type' option in response");
+        client.assert(response.body.hasOwnProperty("message"), "Cannot find 'message' option in response");
+        client.assert(response.body.hasOwnProperty("validation_schema"), "Cannot find 'validation_schema' option in response");
+        client.assert(response.body.hasOwnProperty("path"), "Cannot find 'path' option in response");
+    });
+%}
+###
