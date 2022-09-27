@@ -5,12 +5,13 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
+from starlette.schemas import SchemaGenerator
 
 from apischema.encoder import encode_to_json_response, encode_error_to_json_response
 from apischema.validator import validate_todo_entry
 from entities import TodoEntry
-from persistance.mapper.memory import MemoryTodoEntryMapper
-from persistance.repository import TodoEntryRepository
+from persistence.mapper.memory import MemoryTodoEntryMapper
+from persistence.repository import TodoEntryRepository
 
 from usecases import get_todo_entry, create_todo_entry, UseCaseError, NotFoundError
 
@@ -18,8 +19,22 @@ _MAPPER_IN_MEMORY_STORAGE = {
     1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
 }
 
+schemas = SchemaGenerator(
+    {"openapi": "3.0.0", "info": {"title": "Example API", "version": "1.0"}}
+)
+
 
 async def get_todo(request: Request) -> Response:
+    """
+    summary: Finds TodoEntry by id
+    responses:
+        200:
+            description: Object was found.
+            examples:
+                {"id": 1, "summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-27T17:29:06.183775+00:00"}
+        404:
+            description: Object was not found
+    """
     try:
         identifier = request.path_params["id"]  # TODO: add validation
 
@@ -40,6 +55,18 @@ async def get_todo(request: Request) -> Response:
 
 
 async def create_new_todo_entry(request: Request) -> Response:
+    """
+    summary: Create new TodoEntry
+    responses:
+        201:
+            description: TodoEntry was created.
+            examples:
+                {"summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-05T18:07:19.280040+00:00"}
+        422:
+            description: Validation error.
+        500:
+            description: Something went wrong, try again later.
+    """
     data = await request.json()
     errors = validate_todo_entry(raw_data=data)
     if errors:
@@ -68,10 +95,15 @@ async def create_new_todo_entry(request: Request) -> Response:
     )
 
 
+def openapi_schema(request):
+    return schemas.OpenAPIResponse(request=request)
+
+
 app = Starlette(
     debug=True,
     routes=[
         Route("/todo/", create_new_todo_entry, methods=["POST"]),
         Route("/todo/{id:int}/", get_todo, methods=["GET"]),
+        Route("/schema", endpoint=openapi_schema, include_in_schema=False)
     ],
 )

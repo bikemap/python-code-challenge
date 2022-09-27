@@ -1,7 +1,7 @@
 from entities import TodoEntry
-from persistance.errors import EntityNotFoundError, CreateError
-from persistance.mapper.errors import EntityNotFoundMapperError, CreateMapperError
-from persistance.mapper.interfaces import TodoEntryMapperInterface
+from persistence.errors import EntityNotFoundError, CreateError
+from persistence.mapper.errors import EntityNotFoundMapperError, CreateMapperError
+from persistence.mapper.interfaces import TodoEntryMapperInterface
 
 
 class TodoEntryRepository:

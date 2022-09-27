@@ -1,6 +1,6 @@
 from entities import TodoEntry
-from persistance.errors import CreateError, EntityNotFoundError
-from persistance.repository import TodoEntryRepository
+from persistence.errors import CreateError, EntityNotFoundError
+from persistence.repository import TodoEntryRepository
 
 
 class UseCaseError(Exception):

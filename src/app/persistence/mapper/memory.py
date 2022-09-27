@@ -1,8 +1,8 @@
 from random import randint
 
 from entities import TodoEntry
-from persistance.mapper.errors import EntityNotFoundMapperError, CreateMapperError
-from persistance.mapper.interfaces import TodoEntryMapperInterface
+from persistence.mapper.errors import EntityNotFoundMapperError, CreateMapperError
+from persistence.mapper.interfaces import TodoEntryMapperInterface
 
 
 class MemoryTodoEntryMapper(TodoEntryMapperInterface):

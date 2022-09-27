@@ -3,13 +3,24 @@ GET http://{{host}}:{{port}}/todo/1/
 Accept: application/json
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("Get todo", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}
 ###
 
-## POST Create new invoice
+## GET todo entry
+GET http://{{host}}:{{port}}/todo/42/
+Accept: application/json
+
+> {%
+    client.test("Todo was not found", function() {
+        client.assert(response.status === 404, "Response status is not 404");
+    });
+%}
+###
+
+## POST Create new todo
 POST http://{{host}}:{{port}}/todo/
 Content-Type: application/json
 
@@ -20,7 +31,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("Create new todo", function() {
         client.assert(response.status === 201, "Response status is not 201");
         client.assert(response.body.hasOwnProperty("id"), "Cannot find 'id' option in response");
     });
@@ -38,7 +49,7 @@ Content-Type: application/json
 }
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("Validation error", function() {
         client.assert(response.status === 422, "Response status is not 422");
         client.assert(response.body.hasOwnProperty("type"), "Cannot find 'type' option in response");
         client.assert(response.body.hasOwnProperty("message"), "Cannot find 'message' option in response");

@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 import pytest
 
 from entities import TodoEntry
-from persistance.errors import EntityNotFoundError, CreateError
-from persistance.mapper.memory import MemoryTodoEntryMapper
-from persistance.repository import TodoEntryRepository
+from persistence.errors import EntityNotFoundError, CreateError
+from persistence.mapper.memory import MemoryTodoEntryMapper
+from persistence.repository import TodoEntryRepository
 
 _memory_storage = {
     1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))

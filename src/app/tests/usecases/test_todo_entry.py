@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 import pytest
 
 from entities import TodoEntry
-from persistance.mapper.memory import MemoryTodoEntryMapper
-from persistance.repository import TodoEntryRepository
+from persistence.mapper.memory import MemoryTodoEntryMapper
+from persistence.repository import TodoEntryRepository
 from usecases import get_todo_entry, NotFoundError, create_todo_entry, UseCaseError
 
 _storage = {
