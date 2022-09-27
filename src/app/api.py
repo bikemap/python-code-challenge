@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 
+from apiman.starlette import Apiman
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
-from starlette.schemas import SchemaGenerator
 
 from apischema.encoder import encode_to_json_response, encode_error_to_json_response
+from apischema.schema import schema
 from apischema.validator import validate_todo_entry
 from entities import TodoEntry
 from persistence.mapper.memory import MemoryTodoEntryMapper
@@ -19,20 +20,26 @@ _MAPPER_IN_MEMORY_STORAGE = {
     1: TodoEntry(id=1, summary="Lorem Ipsum", created_at=datetime.now(tz=timezone.utc))
 }
 
-schemas = SchemaGenerator(
-    {"openapi": "3.0.0", "info": {"title": "Example API", "version": "1.0"}}
-)
-
 
 async def get_todo(request: Request) -> Response:
     """
     summary: Finds TodoEntry by id
+    parameters:
+        - name: id
+          in: path
+          description: TodoEntry id
+          required: true
+          schema:
+            type: integer
+            format: int64
     responses:
-        200:
+        "200":
             description: Object was found.
+            schema:
+                $ref: '#/components/schemas/TodoEntry'
             examples:
                 {"id": 1, "summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-27T17:29:06.183775+00:00"}
-        404:
+        "404":
             description: Object was not found
     """
     try:
@@ -56,15 +63,22 @@ async def get_todo(request: Request) -> Response:
 
 async def create_new_todo_entry(request: Request) -> Response:
     """
-    summary: Create new TodoEntry
+    summary: Creates new TodoEntry
+    requestBody:
+        content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/TodoEntry'
     responses:
-        201:
+        "201":
             description: TodoEntry was created.
+            schema:
+                $ref: '#/components/schemas/TodoEntry'
             examples:
                 {"summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-05T18:07:19.280040+00:00"}
-        422:
+        "422":
             description: Validation error.
-        500:
+        "500":
             description: Something went wrong, try again later.
     """
     data = await request.json()
@@ -94,16 +108,19 @@ async def create_new_todo_entry(request: Request) -> Response:
         content=content, status_code=HTTPStatus.CREATED, media_type="application/json"
     )
 
-
-def openapi_schema(request):
-    return schemas.OpenAPIResponse(request=request)
-
+apiman = Apiman(
+    specification_url="/schema/",
+    swagger_url="/",
+    redoc_url="/doc/",
+    template='./apischema/openapi.yml'
+)
+apiman.add_schema("TodoEntry", schema)
 
 app = Starlette(
     debug=True,
     routes=[
         Route("/todo/", create_new_todo_entry, methods=["POST"]),
         Route("/todo/{id:int}/", get_todo, methods=["GET"]),
-        Route("/schema", endpoint=openapi_schema, include_in_schema=False)
     ],
 )
+apiman.init_app(app)
