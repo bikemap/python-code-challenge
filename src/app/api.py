@@ -1,14 +1,12 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 
-from apiman.starlette import Apiman
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
 
 from apischema.encoder import encode_to_json_response, encode_error_to_json_response
-from apischema.schema import schema
 from apischema.validator import validate_todo_entry
 from entities import TodoEntry
 from persistence.mapper.memory import MemoryTodoEntryMapper
@@ -35,8 +33,6 @@ async def get_todo(request: Request) -> Response:
     responses:
         "200":
             description: Object was found.
-            schema:
-                $ref: '#/components/schemas/TodoEntry'
             examples:
                 {"id": 1, "summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-27T17:29:06.183775+00:00"}
         "404":
@@ -64,16 +60,9 @@ async def get_todo(request: Request) -> Response:
 async def create_new_todo_entry(request: Request) -> Response:
     """
     summary: Creates new TodoEntry
-    requestBody:
-        content:
-            application/json:
-                schema:
-                    $ref: '#/components/schemas/TodoEntry'
     responses:
         "201":
             description: TodoEntry was created.
-            schema:
-                $ref: '#/components/schemas/TodoEntry'
             examples:
                 {"summary": "Lorem Ipsum", "detail": null, "created_at": "2022-09-05T18:07:19.280040+00:00"}
         "422":
@@ -108,13 +97,6 @@ async def create_new_todo_entry(request: Request) -> Response:
         content=content, status_code=HTTPStatus.CREATED, media_type="application/json"
     )
 
-apiman = Apiman(
-    specification_url="/schema/",
-    swagger_url="/",
-    redoc_url="/doc/",
-    template='./apischema/openapi.yml'
-)
-apiman.add_schema("TodoEntry", schema)
 
 app = Starlette(
     debug=True,
@@ -123,4 +105,3 @@ app = Starlette(
         Route("/todo/{id:int}/", get_todo, methods=["GET"]),
     ],
 )
-apiman.init_app(app)
